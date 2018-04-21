@@ -38,6 +38,10 @@ object NumberToStringService {
 
   def numberToString(num: Int): String = {
 
+    val others: wordToNumberFunc = number => {
+      (0, numberToWord(number))
+    }
+
     val tens: wordToNumberFunc = number => {
       val ten = number / 10 * 10
       val remainder = number - ten
@@ -61,7 +65,8 @@ object NumberToStringService {
     val buildersWithGuards: Seq[(Int, wordToNumberFunc)] = Seq(
       999 -> thousands,
       99 -> hundreds,
-      19 -> tens
+      19 -> tens,
+      0 -> others
     )
 
     @tailrec
@@ -71,9 +76,6 @@ object NumberToStringService {
 
       (number, wordBuilders) match {
         case (0, _) => acc
-        case (n, _) if n < 20 =>
-          val word = numberToWord(n)
-          buildNumber(0, Seq.empty, s"$acc $word")
         case (n, (min, function) :: functions) if n > min =>
           val (remainder, word) = function(n)
           buildNumber(remainder, functions, s"$acc $word")
