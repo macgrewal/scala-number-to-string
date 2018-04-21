@@ -36,50 +36,57 @@ object NumberToStringService {
     90 -> "ninety"
   )
 
-  val tens: wordToNumberFunc = number => {
-    val ten = number / 10 * 10
-    val remainder = number - ten
-    (remainder, numberToWord(ten))
-  }
-
-  val hundreds: wordToNumberFunc = number => {
-    val hundred = number / 100
-    val remainder = number - hundred * 100
-    val suffix = if (remainder > 0) "and" else ""
-    (remainder, (numberToWord(hundred) + s" hundred $suffix").trim)
-  }
-
-  val thousands: wordToNumberFunc = number => {
-    val thousand = number / 1000
-    val remainder = number - thousand * 1000
-    val suffix = if (remainder > 0 && remainder < 100) "and" else ""
-    (remainder, (numberToWord(thousand) + s" thousand $suffix").trim)
-  }
-
   def numberToString(num: Int): String = {
 
+    val tens: wordToNumberFunc = number => {
+      val ten = number / 10 * 10
+      val remainder = number - ten
+      (remainder, numberToWord(ten))
+    }
+
+    val hundreds: wordToNumberFunc = number => {
+      val hundred = number / 100
+      val remainder = number - hundred * 100
+      val suffix = if (remainder > 0) "and" else ""
+      (remainder, (numberToWord(hundred) + s" hundred $suffix").trim)
+    }
+
+    val thousands: wordToNumberFunc = number => {
+      val thousand = number / 1000
+      val remainder = number - thousand * 1000
+      val suffix = if (remainder > 0 && remainder < 100) "and" else ""
+      (remainder, (numberToWord(thousand) + s" thousand $suffix").trim)
+    }
+
+    val buildersWithGuards: Seq[(Int, wordToNumberFunc)] = Seq(
+      999 -> thousands,
+      99 -> hundreds,
+      19 -> tens
+    )
+
     @tailrec
-    def buildNumber(number: Int, acc: String = ""): String = number match {
-      case 0 => acc
-      case n if n > 999 =>
-        val (remainder, word) = thousands(number)
-        buildNumber(remainder, s"$acc $word")
-      case n if n > 99 =>
-        val (remainder, word) = hundreds(number)
-        buildNumber(remainder, s"$acc $word")
-      case n if n > 19 =>
-        val (remainder, word) = tens(number)
-        buildNumber(remainder, s"$acc $word")
-      case _ =>
-        val word = numberToWord(number)
-        buildNumber(0, s"$acc $word")
+    def buildNumber(number: Int,
+                    wordBuilders: Seq[(Int, wordToNumberFunc)],
+                    acc: String = ""): String = {
+
+      (number, wordBuilders) match {
+        case (0, _) => acc
+        case (n, _) if n < 20 =>
+          val word = numberToWord(n)
+          buildNumber(0, Seq.empty, s"$acc $word")
+        case (n, (min, function) :: functions) if n > min =>
+          val (remainder, word) = function(n)
+          buildNumber(remainder, functions, s"$acc $word")
+        case _ =>
+          buildNumber(number, wordBuilders.tail, acc)
+      }
     }
 
     num match {
       case n if n < 0 => "out of range"
       case n if n >= 10000 => "out of range"
       case 0 => "zero"
-      case n => buildNumber(n).trim
+      case _ => buildNumber(num, buildersWithGuards).trim
     }
   }
 
