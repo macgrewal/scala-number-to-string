@@ -4,7 +4,7 @@ import scala.annotation.tailrec
 
 object NumberToStringService {
 
-  val units: Map[Int, String] = Map(
+  val numberToWord: Map[Int, String] = Map(
     1 -> "one",
     2 -> "two",
     3 -> "three",
@@ -23,10 +23,7 @@ object NumberToStringService {
     16 -> "sixteen",
     17 -> "seventeen",
     18 -> "eighteen",
-    19 -> "nineteen"
-  )
-
-  val tenWord: Map[Int, String] = Map(
+    19 -> "nineteen",
     20 -> "twenty",
     30 -> "thirty",
     40 -> "forty",
@@ -40,21 +37,21 @@ object NumberToStringService {
   val tens: Int => (Int, String) = number => {
     val ten = number / 10 * 10
     val remainder = number - ten
-    (remainder, tenWord(ten))
+    (remainder, numberToWord(ten))
   }
 
   val hundreds: Int => (Int, String) = number => {
     val hundred = number / 100
     val remainder = number - hundred * 100
     val suffix = if (remainder > 0) "and" else ""
-    (remainder, (units(hundred) + s" hundred $suffix").trim)
+    (remainder, (numberToWord(hundred) + s" hundred $suffix").trim)
   }
 
   val thousands: Int => (Int, String) = number => {
     val thousand = number / 1000
     val remainder = number - thousand * 1000
     val suffix = if (remainder > 0 && remainder < 100) "and" else ""
-    (remainder, (units(thousand) + s" thousand $suffix").trim)
+    (remainder, (numberToWord(thousand) + s" thousand $suffix").trim)
   }
 
   def numberToString(num: Int): String = {
@@ -72,7 +69,7 @@ object NumberToStringService {
         val (remainder, word) = tens(number)
         buildNumber(remainder, s"$acc $word")
       case _ =>
-        val word = units(number)
+        val word = numberToWord(number)
         buildNumber(0, s"$acc $word")
     }
 
