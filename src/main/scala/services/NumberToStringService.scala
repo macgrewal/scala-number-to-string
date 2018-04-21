@@ -26,22 +26,21 @@ object NumberToStringService {
     19 -> "nineteen"
   )
 
-  def tens(number: Int): (Int, String) = {
+  val tenWord: Map[Int, String] = Map(
+    20 -> "twenty",
+    30 -> "thirty",
+    40 -> "forty",
+    50 -> "fifty",
+    60 -> "sixty",
+    70 -> "seventy",
+    80 -> "eighty",
+    90 -> "ninety"
+  )
 
+  val tens: Int => (Int, String) = number => {
     val ten = number / 10 * 10
     val remainder = number - ten
-    val word: Map[Int, String] = Map(
-      20 -> "twenty",
-      30 -> "thirty",
-      40 -> "forty",
-      50 -> "fifty",
-      60 -> "sixty",
-      70 -> "seventy",
-      80 -> "eighty",
-      90 -> "ninety"
-    )
-
-    (remainder, word(ten))
+    (remainder, tenWord(ten))
   }
 
   val hundreds: Int => (Int, String) = number => {
