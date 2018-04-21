@@ -4,59 +4,61 @@ import scala.annotation.tailrec
 
 object NumberToStringService {
 
-  val units: Int => String = {
-    case 1 => "one"
-    case 2 => "two"
-    case 3 => "three"
-    case 4 => "four"
-    case 5 => "five"
-    case 6 => "six"
-    case 7 => "seven"
-    case 8 => "eight"
-    case 9 => "nine"
-    case 10 => "ten"
-    case 11 => "eleven"
-    case 12 => "twelve"
-    case 13 => "thirteen"
-    case 14 => "fourteen"
-    case 15 => "fifteen"
-    case 16 => "sixteen"
-    case 17 => "seventeen"
-    case 18 => "eighteen"
-    case 19 => "nineteen"
-    case _ => ""
-  }
+  val units: Map[Int, String] = Map(
+    1 -> "one",
+    2 -> "two",
+    3 -> "three",
+    4 -> "four",
+    5 -> "five",
+    6 -> "six",
+    7 -> "seven",
+    8 -> "eight",
+    9 -> "nine",
+    10 -> "ten",
+    11 -> "eleven",
+    12 -> "twelve",
+    13 -> "thirteen",
+    14 -> "fourteen",
+    15 -> "fifteen",
+    16 -> "sixteen",
+    17 -> "seventeen",
+    18 -> "eighteen",
+    19 -> "nineteen"
+  )
 
-  val tens: Int => String = {
-    case 20 => "twenty"
-    case 30 => "thirty"
-    case 40 => "forty"
-    case 50 => "fifty"
-    case 60 => "sixty"
-    case 70 => "seventy"
-    case 80 => "eighty"
-    case 90 => "ninety"
-    case number =>
-      val ten = number / 10 * 10
-      val other = number - ten
-      s"${tens(ten)} ${units(other)}"
+  def tens(number: Int): (Int, String) = {
+
+    val ten = number / 10 * 10
+    val remainder = number - ten
+    val word: Map[Int, String] = Map(
+      20 -> "twenty",
+      30 -> "thirty",
+      40 -> "forty",
+      50 -> "fifty",
+      60 -> "sixty",
+      70 -> "seventy",
+      80 -> "eighty",
+      90 -> "ninety"
+    )
+
+    (remainder, word(ten))
   }
 
   val hundreds: Int => (Int, String) = number => {
     val hundred = number / 100
     val remainder = number - hundred * 100
-    (remainder, units(hundred) + " hundred")
+    val suffix = if (remainder > 0) "and" else ""
+    (remainder, (units(hundred) + s" hundred $suffix").trim)
   }
 
   val thousands: Int => (Int, String) = number => {
     val thousand = number / 1000
     val remainder = number - thousand * 1000
-    (remainder, units(thousand) + " thousand")
+    val suffix = if (remainder > 0 && remainder < 100) "and" else ""
+    (remainder, (units(thousand) + s" thousand $suffix").trim)
   }
 
   def numberToString(num: Int): String = {
-
-    val and = if (num > 99) "and " else ""
 
     @tailrec
     def buildNumber(number: Int, acc: String = ""): String = number match {
@@ -68,11 +70,11 @@ object NumberToStringService {
         val (remainder, word) = hundreds(number)
         buildNumber(remainder, s"$acc $word")
       case n if n > 19 =>
-        val word = tens(number)
-        buildNumber(0, s"$acc $and$word")
+        val (remainder, word) = tens(number)
+        buildNumber(remainder, s"$acc $word")
       case _ =>
         val word = units(number)
-        buildNumber(0, s"$acc $and$word")
+        buildNumber(0, s"$acc $word")
     }
 
     num match {
