@@ -4,6 +4,8 @@ import scala.annotation.tailrec
 
 object NumberToStringService {
 
+  type wordToNumberFunc = Int => (Int, String)
+
   val numberToWord: Map[Int, String] = Map(
     1 -> "one",
     2 -> "two",
@@ -34,20 +36,20 @@ object NumberToStringService {
     90 -> "ninety"
   )
 
-  val tens: Int => (Int, String) = number => {
+  val tens: wordToNumberFunc = number => {
     val ten = number / 10 * 10
     val remainder = number - ten
     (remainder, numberToWord(ten))
   }
 
-  val hundreds: Int => (Int, String) = number => {
+  val hundreds: wordToNumberFunc = number => {
     val hundred = number / 100
     val remainder = number - hundred * 100
     val suffix = if (remainder > 0) "and" else ""
     (remainder, (numberToWord(hundred) + s" hundred $suffix").trim)
   }
 
-  val thousands: Int => (Int, String) = number => {
+  val thousands: wordToNumberFunc = number => {
     val thousand = number / 1000
     val remainder = number - thousand * 1000
     val suffix = if (remainder > 0 && remainder < 100) "and" else ""
